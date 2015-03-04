@@ -1,0 +1,10 @@
+Installation Instructions
+*************************
+
+If working from the git tree perform an ./bootstrap.sh before execute a simple
+	./configure && make
+
+If starting from a tarball just perform
+	./configure && make
+
+The only needed dependecy is a valid C99 compiler

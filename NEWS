@@ -1,0 +1,11 @@
+NEWS
+****
+
+2015-03-04 Initial implementation of a min-max-heap based on the paper:
+	   Min-Max Heaps and Generalized Priority Queues by
+	   M. D. Atkinson, J.R. Sack, N. Santoro, and T. Strothotte
+
+	   The heap structure requires manual management of memory and functions
+	   do no check for heap boundaries but data structure is fully 
+	   implemented and usable (just copy minmax_heap.c/h on your project).
+
