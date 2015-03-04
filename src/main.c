@@ -35,7 +35,7 @@ int compare_ints_max(const void* a, const void* b) {
 void t_down_max() {
   printf("Testing pop_max after sequential insert from 500k to 0...  ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -48,7 +48,7 @@ void t_down_max() {
     assert(start-- == pop_max(h));
   }
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -56,7 +56,7 @@ void t_down_max() {
 void t_down_min() {
   printf("Testing pop_min after sequential insert from 500k to 0...  ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -69,7 +69,7 @@ void t_down_min() {
     assert(start++ == pop_min(h));
   }
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -77,7 +77,7 @@ void t_down_min() {
 void t_up_max() {
   printf("Testing pop_max after sequential insert from 0 to 500k...  ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -90,7 +90,7 @@ void t_up_max() {
     assert(start-- == pop_max(h));
   }
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -98,7 +98,7 @@ void t_up_max() {
 void t_up_min() {
   printf("Testing pop_mim after sequential insert from 0 to 500k...  ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -111,7 +111,7 @@ void t_up_min() {
     assert(start++ == pop_min(h));
   }
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -119,7 +119,7 @@ void t_up_min() {
 void t_rand_data_max() {
   printf("Testing pop_max after 5000 random insert...                ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -136,7 +136,7 @@ void t_rand_data_max() {
     assert(randarray[index++] == pop_max(h));
   }
   assert(index == 5000);
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -144,7 +144,7 @@ void t_rand_data_max() {
 void t_rand_data_min() {
   printf("Testing pop_min after 5000 random insert...                ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -162,7 +162,7 @@ void t_rand_data_min() {
   }
   assert(index == 5000);
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -193,7 +193,7 @@ void t_min_level() {
 void t_insert_data_max() {
   printf("Testing pop_max on small custom heap...                    ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -209,7 +209,7 @@ void t_insert_data_max() {
   }
   assert(index == -1);
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -217,7 +217,7 @@ void t_insert_data_max() {
 void t_insert_data_min() {
   printf("Testing pop_min on small custom heap...                    ");
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -234,7 +234,7 @@ void t_insert_data_min() {
   }
   assert(index == 10);
 
-  free(h->root);
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -249,15 +249,15 @@ void t_min_index() {
   int a3[11] = {0, 0, 4, 2, 1, 3, 7, 6, 8, 5, 1};
   int a4[11] = {0, 0, 4, 2, 8, 1, 7, 6, 8, 5, 1};
   int a5[11] = {0, 0, 1, 2, 9, 3, 7, 6, 8, 5, 1};
-  h->root = (int*)&a1;
+  h->data = (int*)&a1;
   assert(index_min_child_grandchild(h, 1) == 3);
-  h->root = (int*)&a2;
+  h->data = (int*)&a2;
   assert(index_min_child_grandchild(h, 1) == 2);
-  h->root = (int*)&a3;
+  h->data = (int*)&a3;
   assert(index_min_child_grandchild(h, 1) == 4);
-  h->root = (int*)&a4;
+  h->data = (int*)&a4;
   assert(index_min_child_grandchild(h, 1) == 5);
-  h->root = (int*)&a5;
+  h->data = (int*)&a5;
   assert(index_min_child_grandchild(h, 1) == 2);
   for (; h->count > 1; h->count--) {
     assert(index_min_child_grandchild(h, 1) == 2);
@@ -270,7 +270,7 @@ void t_rand_data_min_max() {
   printf("Testing random pop_min/pop_max after 10k random insert...  ");
   int array_size = 10000;
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->root = calloc(10, sizeof(int));
+  h->data = calloc(10, sizeof(int));
   h->count = 0;
   h->size = 10;
 
@@ -298,7 +298,22 @@ void t_rand_data_min_max() {
     }
   }
   assert(min_index + max_index == array_size);
-  free(h->root);
+  free(h->data);
+  free(h);
+  printf("[OK]\n");
+}
+
+void t_pop_from_empty() {
+  printf("Testing empty pop...                                       ");
+  heap_t* h = calloc(1, sizeof(heap_t));
+  h->data = calloc(10, sizeof(int));
+  h->count = 0;
+  h->size = 10;
+
+  assert(pop_min(h) == -1);
+  assert(pop_max(h) == -1);
+
+  free(h->data);
   free(h);
   printf("[OK]\n");
 }
@@ -319,6 +334,8 @@ int main() {
 
   t_min_level();
   t_min_index();
+
+  t_pop_from_empty();
 
   return 0;
 }

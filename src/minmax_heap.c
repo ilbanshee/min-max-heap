@@ -38,46 +38,46 @@ int log2_32(uint32_t value) {
 }
 
 void swap(heap_t* h, int i, int j) {
-  int tmp = h->root[i];
-  h->root[i] = h->root[j];
-  h->root[j] = tmp;
+  int tmp = h->data[i];
+  h->data[i] = h->data[j];
+  h->data[j] = tmp;
 }
 
 void bubbleup_min(heap_t* h, int i) {
-  int ppi = parent(parent(i));
-  if (ppi <= 0) return;
+  int pp_idx = parent(parent(i));
+  if (pp_idx <= 0) return;
 
-  if (h->root[i] < h->root[ppi]) {
-    swap(h, i, ppi);
-    bubbleup_min(h, ppi);
+  if (h->data[i] < h->data[pp_idx]) {
+    swap(h, i, pp_idx);
+    bubbleup_min(h, pp_idx);
   }
 }
 
 void bubbleup_max(heap_t* h, int i) {
-  int ppi = parent(parent(i));
-  if (ppi <= 0) return;
+  int pp_idx = parent(parent(i));
+  if (pp_idx <= 0) return;
 
-  if (h->root[i] > h->root[ppi]) {
-    swap(h, i, ppi);
-    bubbleup_max(h, ppi);
+  if (h->data[i] > h->data[pp_idx]) {
+    swap(h, i, pp_idx);
+    bubbleup_max(h, pp_idx);
   }
 }
 
 void bubbleup(heap_t* h, int i) {
-  int parentIdx = parent(i);
-  if (parentIdx <= 0) return;
+  int p_idx = parent(i);
+  if (p_idx <= 0) return;
 
   if (is_min(i)) {
-    if (h->root[i] > h->root[parentIdx]) {
-      swap(h, i, parentIdx);
-      bubbleup_max(h, parentIdx);
+    if (h->data[i] > h->data[p_idx]) {
+      swap(h, i, p_idx);
+      bubbleup_max(h, p_idx);
     } else {
       bubbleup_min(h, i);
     }
   } else {
-    if (h->root[i] < h->root[parentIdx]) {
-      swap(h, i, parentIdx);
-      bubbleup_min(h, parentIdx);
+    if (h->data[i] < h->data[p_idx]) {
+      swap(h, i, p_idx);
+      bubbleup_min(h, p_idx);
     } else {
       bubbleup_max(h, i);
     }
@@ -92,16 +92,15 @@ int index_max_child_grandchild(heap_t* h, int i) {
   int f = second_child(b);
   int e = first_child(b);
 
-  int mini = -1;
-  int count = h->count;
-  if (a <= count) mini = a;
-  if (b <= count && h->root[b] > h->root[mini]) mini = b;
-  if (c <= count && h->root[c] > h->root[mini]) mini = c;
-  if (d <= count && h->root[d] > h->root[mini]) mini = d;
-  if (e <= count && h->root[e] > h->root[mini]) mini = e;
-  if (f <= count && h->root[f] > h->root[mini]) mini = f;
+  int min_idx = -1;
+  if (a <= h->count) min_idx = a;
+  if (b <= h->count && h->data[b] > h->data[min_idx]) min_idx = b;
+  if (c <= h->count && h->data[c] > h->data[min_idx]) min_idx = c;
+  if (d <= h->count && h->data[d] > h->data[min_idx]) min_idx = d;
+  if (e <= h->count && h->data[e] > h->data[min_idx]) min_idx = e;
+  if (f <= h->count && h->data[f] > h->data[min_idx]) min_idx = f;
 
-  return mini;
+  return min_idx;
 }
 
 int index_min_child_grandchild(heap_t* h, int i) {
@@ -112,108 +111,123 @@ int index_min_child_grandchild(heap_t* h, int i) {
   int e = first_child(b);
   int f = second_child(b);
 
-  int mini = -1;
-  int count = h->count;
+  int min_idx = -1;
+  if (a <= h->count) min_idx = a;
+  if (b <= h->count && h->data[b] < h->data[min_idx]) min_idx = b;
+  if (c <= h->count && h->data[c] < h->data[min_idx]) min_idx = c;
+  if (d <= h->count && h->data[d] < h->data[min_idx]) min_idx = d;
+  if (e <= h->count && h->data[e] < h->data[min_idx]) min_idx = e;
+  if (f <= h->count && h->data[f] < h->data[min_idx]) min_idx = f;
 
-  if (a <= count) mini = a;
-  if (b <= count && h->root[b] < h->root[mini]) mini = b;
-  if (c <= count && h->root[c] < h->root[mini]) mini = c;
-  if (d <= count && h->root[d] < h->root[mini]) mini = d;
-  if (e <= count && h->root[e] < h->root[mini]) mini = e;
-  if (f <= count && h->root[f] < h->root[mini]) mini = f;
-
-  return mini;
+  return min_idx;
 }
 
-void bubbledown_max(heap_t* h, int i) {
+void trickledown_max(heap_t* h, int i) {
   int m = index_max_child_grandchild(h, i);
-  // debug_printf("max m: %d\n", m);
   if (m <= -1) return;
   if (m > second_child(i)) {
     // m is a grandchild
-    if (h->root[m] > h->root[i]) {
+    if (h->data[m] > h->data[i]) {
       swap(h, i, m);
-      if (h->root[m] < h->root[parent(m)]) {
+      if (h->data[m] < h->data[parent(m)]) {
         swap(h, m, parent(m));
       }
-      bubbledown_max(h, m);
+      trickledown_max(h, m);
     }
   } else {
     // m is a child
-    if (h->root[m] > h->root[i]) swap(h, i, m);
+    if (h->data[m] > h->data[i]) swap(h, i, m);
   }
 }
 
-void bubbledown_min(heap_t* h, int i) {
+void trickledown_min(heap_t* h, int i) {
   int m = index_min_child_grandchild(h, i);
   if (m <= -1) return;
-  // debug_printf("min m: %d\n", m);
   if (m > second_child(i)) {
     // m is a grandchild
-    if (h->root[m] < h->root[i]) {
+    if (h->data[m] < h->data[i]) {
       swap(h, i, m);
-      if (h->root[m] > h->root[parent(m)]) {
+      if (h->data[m] > h->data[parent(m)]) {
         swap(h, m, parent(m));
       }
-      bubbledown_min(h, m);
+      trickledown_min(h, m);
     }
   } else {
     // m is a child
-    if (h->root[m] < h->root[i]) swap(h, i, m);
+    if (h->data[m] < h->data[i]) swap(h, i, m);
   }
 }
 
-void bubbledown(heap_t* h, int i) {
+void trickledown(heap_t* h, int i) {
   if (is_min(i)) {
-    bubbledown_min(h, i);
+    trickledown_min(h, i);
   } else {
-    bubbledown_max(h, i);
+    trickledown_max(h, i);
   }
 }
 
 void insert(heap_t* h, int value) {
+  assert(value >= 0);
   h->count++;
   // check for realloc
   if (h->count + 1 == h->size) {
-    // debug_print("realloc: %d, %d\n", h->count, h->size * 2);
-    h->root = realloc(h->root, (h->size * 2) * sizeof(int));
+    // printf("realloc: %d, %d\n", h->count, h->size * 2);
+    h->data = realloc(h->data, (h->size * 2) * sizeof(int));
     h->size = h->size * 2;
   }
-  h->root[h->count] = value;
+  h->data[h->count] = value;
   bubbleup(h, h->count);
 }
 
 int pop_min(heap_t* h) {
-  int d = h->root[1];
-  h->root[1] = h->root[h->count--];
-  bubbledown(h, 1);
+  if (h->count == 0) {
+    return -1;
+  }
+  int d = h->data[1];
+  h->data[1] = h->data[h->count--];
+  trickledown(h, 1);
+
+  if (h->count == h->size / 3) {
+    // printf("realloc: %d, %d\n", h->count, h->size / 2);
+    h->data = realloc(h->data, (h->size / 2) * sizeof(int));
+    h->size = h->size / 2;
+  }
 
   return d;
 }
 
 int pop_max(heap_t* h) {
+  if (h->count == 0) {
+    return -1;
+  }
   if (h->count == 1) {
     h->count--;
-    return h->root[1];
+    return h->data[1];
   }
   if (h->count == 2) {
     h->count--;
-    return h->root[2];
+    return h->data[2];
   }
 
   int idx = 2;
-  if (h->root[2] < h->root[3]) idx = 3;
-  int d = h->root[idx];
-  h->root[idx] = h->root[h->count--];
-  bubbledown(h, idx);
+  if (h->data[2] < h->data[3]) idx = 3;
+  int d = h->data[idx];
+  h->data[idx] = h->data[h->count--];
+  trickledown(h, idx);
+
+  if (h->count == h->size / 3) {
+    // printf("realloc: %d, %d\n", h->count, h->size / 2);
+    h->data = realloc(h->data, (h->size / 2) * sizeof(int));
+    h->size = h->size / 2;
+  }
 
   return d;
 }
 
 void dump(heap_t* h) {
-  printf("count is %d: [", h->count);
+  printf("count is %d, elements are:\n\t [", h->count);
   for (int i = 1; i <= h->count; i++) {
-    printf(" %d ", h->root[i]);
+    printf(" %d ", h->data[i]);
   }
   printf("]\n");
 }

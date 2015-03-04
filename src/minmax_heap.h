@@ -2,7 +2,7 @@
 #define MINMAX_HEAP_H_
 
 typedef struct heap {
-  int* root;
+  int* data;
   int count;
   int size;
 } heap_t;
