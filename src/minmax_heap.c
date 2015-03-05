@@ -21,7 +21,7 @@
   ({                        \
     __typeof__(a) _a = (a); \
     __typeof__(b) _b = (b); \
-    _a < _b ? _a : _b;      \
+    _a > _b ? _a : _b;      \
   })
 
 const int tab32[32] = {0,  9,  1,  10, 13, 21, 2,  29, 11, 14, 16,
@@ -37,13 +37,13 @@ int log2_32(uint32_t value) {
   return tab32[(uint32_t)(value * 0x07C4ACDD) >> 27];
 }
 
-void swap(heap_t* h, int i, int j) {
+static void swap(heap_t* h, int i, int j) {
   int tmp = h->data[i];
   h->data[i] = h->data[j];
   h->data[j] = tmp;
 }
 
-void bubbleup_min(heap_t* h, int i) {
+static void bubbleup_min(heap_t* h, int i) {
   int pp_idx = parent(parent(i));
   if (pp_idx <= 0) return;
 
@@ -53,7 +53,7 @@ void bubbleup_min(heap_t* h, int i) {
   }
 }
 
-void bubbleup_max(heap_t* h, int i) {
+static void bubbleup_max(heap_t* h, int i) {
   int pp_idx = parent(parent(i));
   if (pp_idx <= 0) return;
 
@@ -63,7 +63,7 @@ void bubbleup_max(heap_t* h, int i) {
   }
 }
 
-void bubbleup(heap_t* h, int i) {
+static void bubbleup(heap_t* h, int i) {
   int p_idx = parent(i);
   if (p_idx <= 0) return;
 
@@ -122,7 +122,7 @@ int index_min_child_grandchild(heap_t* h, int i) {
   return min_idx;
 }
 
-void trickledown_max(heap_t* h, int i) {
+static void trickledown_max(heap_t* h, int i) {
   int m = index_max_child_grandchild(h, i);
   if (m <= -1) return;
   if (m > second_child(i)) {
@@ -140,7 +140,7 @@ void trickledown_max(heap_t* h, int i) {
   }
 }
 
-void trickledown_min(heap_t* h, int i) {
+static void trickledown_min(heap_t* h, int i) {
   int m = index_min_child_grandchild(h, i);
   if (m <= -1) return;
   if (m > second_child(i)) {
@@ -158,7 +158,7 @@ void trickledown_min(heap_t* h, int i) {
   }
 }
 
-void trickledown(heap_t* h, int i) {
+static void trickledown(heap_t* h, int i) {
   if (is_min(i)) {
     trickledown_min(h, i);
   } else {
@@ -166,7 +166,7 @@ void trickledown(heap_t* h, int i) {
   }
 }
 
-void insert(heap_t* h, int value) {
+void mmh_insert(heap_t* h, int value) {
   assert(value >= 0);
   h->count++;
   // check for realloc
@@ -179,55 +179,103 @@ void insert(heap_t* h, int value) {
   bubbleup(h, h->count);
 }
 
-int pop_min(heap_t* h) {
-  if (h->count == 0) {
-    return -1;
+int mmh_pop_min(heap_t* h) {
+  if (h->count > 1) {
+    int d = h->data[1];
+    h->data[1] = h->data[h->count--];
+    trickledown(h, 1);
+    if (h->count == h->size / 3) {
+      // printf("realloc: %d, %d\n", h->count, h->size / 2);
+      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(int));
+      h->size = (h->size / 2) + 1;
+    }
+    return d;
   }
-  int d = h->data[1];
-  h->data[1] = h->data[h->count--];
-  trickledown(h, 1);
 
-  if (h->count == h->size / 3) {
-    // printf("realloc: %d, %d\n", h->count, h->size / 2);
-    h->data = realloc(h->data, (h->size / 2) * sizeof(int));
-    h->size = h->size / 2;
-  }
-
-  return d;
-}
-
-int pop_max(heap_t* h) {
-  if (h->count == 0) {
-    return -1;
-  }
   if (h->count == 1) {
     h->count--;
     return h->data[1];
   }
+  return -1;
+}
+
+int mmh_pop_max(heap_t* h) {
+  if (h->count > 2) {
+    int idx = 2;
+    if (h->data[2] < h->data[3]) idx = 3;
+    int d = h->data[idx];
+    h->data[idx] = h->data[h->count--];
+    trickledown(h, idx);
+    if (h->count == h->size / 3) {
+      // printf("realloc: %d, %d\n", h->count, h->size / 2);
+      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(int));
+      h->size = (h->size / 2) + 1;
+    }
+    return d;
+  }
+
   if (h->count == 2) {
     h->count--;
     return h->data[2];
   }
 
-  int idx = 2;
-  if (h->data[2] < h->data[3]) idx = 3;
-  int d = h->data[idx];
-  h->data[idx] = h->data[h->count--];
-  trickledown(h, idx);
-
-  if (h->count == h->size / 3) {
-    // printf("realloc: %d, %d\n", h->count, h->size / 2);
-    h->data = realloc(h->data, (h->size / 2) * sizeof(int));
-    h->size = h->size / 2;
+  if (h->count == 1) {
+    h->count--;
+    return h->data[1];
   }
-
-  return d;
+  return -1;
 }
 
-void dump(heap_t* h) {
+int mmh_peek_min(heap_t* h) {
+  if (h->count > 0) {
+    return h->data[1];
+  }
+  return -1;
+}
+
+int mmh_peek_max(heap_t* h) {
+  if (h->count > 2) {
+    return max(h->data[2], h->data[3]);
+  }
+  if (h->count == 2) {
+    return h->data[2];
+  }
+  if (h->count == 1) {
+    return h->data[1];
+  }
+  return -1;
+}
+
+void mmh_dump(heap_t* h) {
   printf("count is %d, elements are:\n\t [", h->count);
   for (int i = 1; i <= h->count; i++) {
     printf(" %d ", h->data[i]);
   }
   printf("]\n");
+}
+
+heap_t* mmh_init() {
+  heap_t* h = calloc(1, sizeof(heap_t));
+  h->data = calloc(50, sizeof(int));
+  h->count = 0;
+  h->size = 50;
+
+  return h;
+}
+
+heap_t* mmh_init_with_size(int size) {
+  // first array element is wasted since 1st heap element is on position 1
+  // inside the array i.e. => [0,(1),(2), ... (n)] so minimum viable size is 2
+  size = size > 2 ? size : 2;
+  heap_t* h = calloc(1, sizeof(heap_t));
+  h->data = calloc(size, sizeof(int));
+  h->count = 0;
+  h->size = size;
+
+  return h;
+}
+
+void mmh_free(heap_t* h) {
+  free(h->data);
+  free(h);
 }

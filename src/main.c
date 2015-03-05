@@ -34,136 +34,113 @@ int compare_ints_max(const void* a, const void* b) {
 
 void t_down_max() {
   printf("Testing pop_max after sequential insert from 500k to 0...  ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   for (int i = 500000; i >= 0; i--) {
-    insert(h, i);
+    mmh_insert(h, i);
   }
 
   int start = 500000;
   while (h->count != 0) {
-    assert(start-- == pop_max(h));
+    assert(start-- == mmh_pop_max(h));
   }
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_down_min() {
   printf("Testing pop_min after sequential insert from 500k to 0...  ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   for (int i = 500000; i >= 0; i--) {
-    insert(h, i);
+    mmh_insert(h, i);
   }
 
   int start = 0;
   while (h->count != 0) {
-    assert(start++ == pop_min(h));
+    assert(start++ == mmh_pop_min(h));
   }
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_up_max() {
   printf("Testing pop_max after sequential insert from 0 to 500k...  ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   for (int i = 0; i <= 500000; i++) {
-    insert(h, i);
+    mmh_insert(h, i);
   }
 
   int start = 500000;
   while (h->count != 0) {
-    assert(start-- == pop_max(h));
+    assert(start-- == mmh_pop_max(h));
   }
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_up_min() {
   printf("Testing pop_mim after sequential insert from 0 to 500k...  ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   for (int i = 0; i <= 500000; i++) {
-    insert(h, i);
+    mmh_insert(h, i);
   }
 
   int start = 0;
   while (h->count != 0) {
-    assert(start++ == pop_min(h));
+    assert(start++ == mmh_pop_min(h));
   }
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_rand_data_max() {
   printf("Testing pop_max after 5000 random insert...                ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   srand(time(NULL));
   int randarray[5000];
   for (int i = 0; i < 5000; i++) {
     randarray[i] = rand() % 100;
-    insert(h, randarray[i]);
+    mmh_insert(h, randarray[i]);
   }
 
   qsort(randarray, 5000, sizeof(int), compare_ints_max);
   int index = 0;
   while (h->count != 0) {
-    assert(randarray[index++] == pop_max(h));
+    assert(randarray[index++] == mmh_pop_max(h));
   }
   assert(index == 5000);
-  free(h->data);
-  free(h);
+
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_rand_data_min() {
   printf("Testing pop_min after 5000 random insert...                ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   srand(time(NULL));
   int randarray[5000];
   for (int i = 0; i < 5000; i++) {
     randarray[i] = rand() % 100;
-    insert(h, randarray[i]);
+    mmh_insert(h, randarray[i]);
   }
 
   qsort(randarray, 5000, sizeof(int), compare_ints_min);
   int index = 0;
   while (h->count != 0) {
-    assert(randarray[index++] == pop_min(h));
+    assert(randarray[index++] == mmh_pop_min(h));
   }
   assert(index == 5000);
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
@@ -192,57 +169,52 @@ void t_min_level() {
 
 void t_insert_data_max() {
   printf("Testing pop_max on small custom heap...                    ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   srand(time(NULL));
   int randarray[10] = {0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
   for (int i = 0; i < 10; i++) {
-    insert(h, randarray[i]);
+    mmh_insert(h, randarray[i]);
   }
   qsort(randarray, 10, sizeof(int), compare_ints_min);
   int index = 9;
   while (h->count > 0) {
-    assert(randarray[index--] == pop_max(h));
+    assert(randarray[index--] == mmh_pop_max(h));
   }
   assert(index == -1);
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_insert_data_min() {
   printf("Testing pop_min on small custom heap...                    ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   srand(time(NULL));
   int randarray[10] = {0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
   for (int i = 0; i < 10; i++) {
-    insert(h, randarray[i]);
+    mmh_insert(h, randarray[i]);
   }
 
   qsort(randarray, 10, sizeof(int), compare_ints_min);
   int index = 0;
   while (h->count > 0) {
-    assert(randarray[index++] == pop_min(h));
+    assert(randarray[index++] == mmh_pop_min(h));
   }
   assert(index == 10);
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_min_index() {
   printf("Testing min index calculation...                           ");
-  heap_t* h = calloc(1, sizeof(heap_t));
+  heap_t* h = mmh_init();
+  // messing with internals for this test...
   h->count = 10;
+  int* tmp = h->data;
+
   //            0  1  2  3  4  5  6  7  8  9  10
   int a1[11] = {0, 0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
   int a2[11] = {0, 0, 1, 2, 9, 3, 7, 6, 8, 5, 1};
@@ -262,23 +234,25 @@ void t_min_index() {
   for (; h->count > 1; h->count--) {
     assert(index_min_child_grandchild(h, 1) == 2);
   }
-  free(h);
+
+  // restore verbatim situation before calling the free function
+  h->data = tmp;
+  h->count = 0;
+
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_rand_data_min_max() {
   printf("Testing random pop_min/pop_max after 10k random insert...  ");
   int array_size = 10000;
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
   srand(time(NULL));
   int randarray[array_size];
   for (int i = 0; i < array_size; i++) {
     randarray[i] = rand() % (array_size * 10);
-    insert(h, randarray[i]);
+    mmh_insert(h, randarray[i]);
   }
 
   int randarray_max[array_size];
@@ -292,29 +266,135 @@ void t_rand_data_min_max() {
 
   while (h->count > 0) {
     if (rand() % 2 == 0) {
-      assert(randarray_min[min_index++] == pop_min(h));
+      assert(randarray_min[min_index++] == mmh_pop_min(h));
     } else {
-      assert(randarray_max[max_index++] == pop_max(h));
+      assert(randarray_max[max_index++] == mmh_pop_max(h));
     }
   }
   assert(min_index + max_index == array_size);
-  free(h->data);
-  free(h);
+
+  mmh_free(h);
   printf("[OK]\n");
 }
 
 void t_pop_from_empty() {
   printf("Testing empty pop...                                       ");
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(10, sizeof(int));
-  h->count = 0;
-  h->size = 10;
+  heap_t* h = mmh_init();
 
-  assert(pop_min(h) == -1);
-  assert(pop_max(h) == -1);
+  assert(mmh_pop_min(h) == -1);
+  assert(mmh_pop_max(h) == -1);
 
-  free(h->data);
-  free(h);
+  mmh_free(h);
+  printf("[OK]\n");
+}
+
+void t_initial_size_pop_min_max() {
+  printf("Testing random pop on different initial heap sizes...      ");
+  for (int size = 1; size < 100; size++) {
+    int array_size = 1000;
+    heap_t* h = mmh_init_with_size(size);
+
+    srand(time(NULL));
+    int randarray[array_size];
+    for (int i = 0; i < array_size; i++) {
+      randarray[i] = rand() % (array_size * 10);
+      mmh_insert(h, randarray[i]);
+    }
+
+    int randarray_max[array_size];
+    int randarray_min[array_size];
+    memcpy(&randarray_max, randarray, array_size * sizeof(int));
+    memcpy(&randarray_min, randarray, array_size * sizeof(int));
+    qsort(randarray_min, array_size, sizeof(int), compare_ints_min);
+    qsort(randarray_max, array_size, sizeof(int), compare_ints_max);
+    int min_index = 0;
+    int max_index = 0;
+
+    while (h->count > 0) {
+      if (rand() % 2 == 0) {
+        assert(randarray_min[min_index++] == mmh_pop_min(h));
+      } else {
+        assert(randarray_max[max_index++] == mmh_pop_max(h));
+      }
+    }
+    assert(min_index + max_index == array_size);
+
+    mmh_free(h);
+  }
+  printf("[OK]\n");
+}
+
+void t_insert_reinsert_data() {
+  printf("Testing insert-empty-insert operation...                   ");
+  heap_t* h = mmh_init();
+
+  srand(time(NULL));
+  int randarray[10] = {0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
+  for (int i = 0; i < 10; i++) {
+    mmh_insert(h, randarray[i]);
+  }
+
+  qsort(randarray, 10, sizeof(int), compare_ints_min);
+  int index = 0;
+  while (h->count > 0) {
+    assert(randarray[index++] == mmh_pop_min(h));
+  }
+  assert(index == 10);
+  assert(mmh_pop_min(h) == -1);
+  assert(mmh_pop_max(h) == -1);
+
+  for (int i = 0; i < 10; i++) {
+    mmh_insert(h, randarray[i]);
+  }
+  index = 0;
+  while (h->count > 0) {
+    assert(randarray[index++] == mmh_pop_min(h));
+  }
+  assert(index == 10);
+  mmh_free(h);
+  printf("[OK]\n");
+}
+
+void t_peek_min_max() {
+  printf("Testing random peek on heap...                             ");
+  for (int run = 1; run < 1000; run++) {
+    heap_t* h = mmh_init();
+
+    srand(time(NULL));
+    int randarray[10];
+    for (int i = 0; i < 10; i++) {
+      randarray[i] = rand() % (10);
+      mmh_insert(h, randarray[i]);
+    }
+
+    int randarray_max[10];
+    int randarray_min[10];
+    memcpy(&randarray_max, randarray, 10 * sizeof(int));
+    memcpy(&randarray_min, randarray, 10 * sizeof(int));
+    qsort(randarray_min, 10, sizeof(int), compare_ints_min);
+    qsort(randarray_max, 10, sizeof(int), compare_ints_max);
+    int min_index = 0;
+    int max_index = 0;
+
+    while (h->count > 0) {
+      if (rand() % 2 == 0) {
+        if (rand() % 2 == 0) {
+          assert(randarray_max[max_index] == mmh_peek_max(h));
+        } else {
+          assert(randarray_min[min_index] == mmh_peek_min(h));
+        }
+      } else {
+        if (rand() % 2 == 0) {
+          assert(randarray_max[max_index++] == mmh_pop_max(h));
+        } else {
+          assert(randarray_min[min_index++] == mmh_pop_min(h));
+        }
+      }
+    }
+    assert(min_index + max_index == 10);
+
+    mmh_free(h);
+  }
   printf("[OK]\n");
 }
 
@@ -336,6 +416,10 @@ int main() {
   t_min_index();
 
   t_pop_from_empty();
+  t_initial_size_pop_min_max();
+  t_insert_reinsert_data();
+
+  t_peek_min_max();
 
   return 0;
 }

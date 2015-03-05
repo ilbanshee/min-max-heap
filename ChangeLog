@@ -1,2 +1,6 @@
+2015-03-05  Marco "Banshee" Zavagno <itsme@ilbanshee.net>
+ * Function names reviewed and boundary checks implemented, added init/delete
+   function for heap struct, added peek min/max operation, fixed max macro
 2015-03-04  Marco "Banshee" Zavagno <itsme@ilbanshee.net>
  * Initial code release with main.c acting as usage demo and test-suite
+

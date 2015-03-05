@@ -1,6 +1,8 @@
 NEWS
 ****
 
+2015-03-05 Boundary check implemented, better function naming, added simple
+           init/free function for heap struct, added peek operations.
 2015-03-04 Initial implementation of a min-max-heap based on the paper:
 	   Min-Max Heaps and Generalized Priority Queues by
 	   M. D. Atkinson, J.R. Sack, N. Santoro, and T. Strothotte
