@@ -14,7 +14,6 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
-# FIXME: Replace `main' with a function in `-lm':
 AC_CHECK_LIB([m], [log2])
 
 AM_INIT_AUTOMAKE([subdir-objects])
