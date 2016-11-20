@@ -1,8 +1,8 @@
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <stdint.h>
-#include <stdbool.h>
 
 #include "minmax_heap.h"
 
@@ -38,16 +38,20 @@ int log2_32(uint32_t value) {
 }
 
 static void swap(heap_t* h, int i, int j) {
-  int tmp = h->data[i];
+  int tmp = h->prio[i];
+  h->prio[i] = h->prio[j];
+  h->prio[j] = tmp;
+
+  void* dtmp = h->data[i];
   h->data[i] = h->data[j];
-  h->data[j] = tmp;
+  h->data[j] = dtmp;
 }
 
 static void bubbleup_min(heap_t* h, int i) {
   int pp_idx = parent(parent(i));
   if (pp_idx <= 0) return;
 
-  if (h->data[i] < h->data[pp_idx]) {
+  if (h->prio[i] < h->prio[pp_idx]) {
     swap(h, i, pp_idx);
     bubbleup_min(h, pp_idx);
   }
@@ -57,7 +61,7 @@ static void bubbleup_max(heap_t* h, int i) {
   int pp_idx = parent(parent(i));
   if (pp_idx <= 0) return;
 
-  if (h->data[i] > h->data[pp_idx]) {
+  if (h->prio[i] > h->prio[pp_idx]) {
     swap(h, i, pp_idx);
     bubbleup_max(h, pp_idx);
   }
@@ -68,14 +72,14 @@ static void bubbleup(heap_t* h, int i) {
   if (p_idx <= 0) return;
 
   if (is_min(i)) {
-    if (h->data[i] > h->data[p_idx]) {
+    if (h->prio[i] > h->prio[p_idx]) {
       swap(h, i, p_idx);
       bubbleup_max(h, p_idx);
     } else {
       bubbleup_min(h, i);
     }
   } else {
-    if (h->data[i] < h->data[p_idx]) {
+    if (h->prio[i] < h->prio[p_idx]) {
       swap(h, i, p_idx);
       bubbleup_min(h, p_idx);
     } else {
@@ -94,11 +98,11 @@ int index_max_child_grandchild(heap_t* h, int i) {
 
   int min_idx = -1;
   if (a <= h->count) min_idx = a;
-  if (b <= h->count && h->data[b] > h->data[min_idx]) min_idx = b;
-  if (c <= h->count && h->data[c] > h->data[min_idx]) min_idx = c;
-  if (d <= h->count && h->data[d] > h->data[min_idx]) min_idx = d;
-  if (e <= h->count && h->data[e] > h->data[min_idx]) min_idx = e;
-  if (f <= h->count && h->data[f] > h->data[min_idx]) min_idx = f;
+  if (b <= h->count && h->prio[b] > h->prio[min_idx]) min_idx = b;
+  if (c <= h->count && h->prio[c] > h->prio[min_idx]) min_idx = c;
+  if (d <= h->count && h->prio[d] > h->prio[min_idx]) min_idx = d;
+  if (e <= h->count && h->prio[e] > h->prio[min_idx]) min_idx = e;
+  if (f <= h->count && h->prio[f] > h->prio[min_idx]) min_idx = f;
 
   return min_idx;
 }
@@ -113,11 +117,11 @@ int index_min_child_grandchild(heap_t* h, int i) {
 
   int min_idx = -1;
   if (a <= h->count) min_idx = a;
-  if (b <= h->count && h->data[b] < h->data[min_idx]) min_idx = b;
-  if (c <= h->count && h->data[c] < h->data[min_idx]) min_idx = c;
-  if (d <= h->count && h->data[d] < h->data[min_idx]) min_idx = d;
-  if (e <= h->count && h->data[e] < h->data[min_idx]) min_idx = e;
-  if (f <= h->count && h->data[f] < h->data[min_idx]) min_idx = f;
+  if (b <= h->count && h->prio[b] < h->prio[min_idx]) min_idx = b;
+  if (c <= h->count && h->prio[c] < h->prio[min_idx]) min_idx = c;
+  if (d <= h->count && h->prio[d] < h->prio[min_idx]) min_idx = d;
+  if (e <= h->count && h->prio[e] < h->prio[min_idx]) min_idx = e;
+  if (f <= h->count && h->prio[f] < h->prio[min_idx]) min_idx = f;
 
   return min_idx;
 }
@@ -127,16 +131,16 @@ static void trickledown_max(heap_t* h, int i) {
   if (m <= -1) return;
   if (m > second_child(i)) {
     // m is a grandchild
-    if (h->data[m] > h->data[i]) {
+    if (h->prio[m] > h->prio[i]) {
       swap(h, i, m);
-      if (h->data[m] < h->data[parent(m)]) {
+      if (h->prio[m] < h->prio[parent(m)]) {
         swap(h, m, parent(m));
       }
       trickledown_max(h, m);
     }
   } else {
     // m is a child
-    if (h->data[m] > h->data[i]) swap(h, i, m);
+    if (h->prio[m] > h->prio[i]) swap(h, i, m);
   }
 }
 
@@ -145,16 +149,16 @@ static void trickledown_min(heap_t* h, int i) {
   if (m <= -1) return;
   if (m > second_child(i)) {
     // m is a grandchild
-    if (h->data[m] < h->data[i]) {
+    if (h->prio[m] < h->prio[i]) {
       swap(h, i, m);
-      if (h->data[m] > h->data[parent(m)]) {
+      if (h->prio[m] > h->prio[parent(m)]) {
         swap(h, m, parent(m));
       }
       trickledown_min(h, m);
     }
   } else {
     // m is a child
-    if (h->data[m] < h->data[i]) swap(h, i, m);
+    if (h->prio[m] < h->prio[i]) swap(h, i, m);
   }
 }
 
@@ -166,27 +170,87 @@ static void trickledown(heap_t* h, int i) {
   }
 }
 
-void mmh_insert(heap_t* h, int value) {
-  assert(value >= 0);
+void mmh_insert(heap_t* h, int priority, void* data) {
+  assert(priority >= 0);
   h->count++;
   // check for realloc
   if (h->count + 1 == h->size) {
     // printf("realloc: %d, %d\n", h->count, h->size * 2);
-    h->data = realloc(h->data, (h->size * 2) * sizeof(int));
+    h->prio = realloc(h->prio, (h->size * 2) * sizeof(int));
+    h->data = realloc(h->data, (h->size * 2) * sizeof(void*));
     h->size = h->size * 2;
   }
-  h->data[h->count] = value;
+  h->prio[h->count] = priority;
+  h->data[h->count] = data;
   bubbleup(h, h->count);
 }
 
-int mmh_pop_min(heap_t* h) {
+void* mmh_pop_min_data(heap_t* h) {
   if (h->count > 1) {
-    int d = h->data[1];
-    h->data[1] = h->data[h->count--];
+    void* rv = h->data[1];
+    h->prio[1] = h->prio[h->count];
+    h->data[1] = h->data[h->count];
+    h->count--;
     trickledown(h, 1);
     if (h->count == h->size / 3) {
       // printf("realloc: %d, %d\n", h->count, h->size / 2);
-      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(int));
+      h->prio = realloc(h->prio, ((h->size / 2) + 1) * sizeof(int));
+      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(void*));
+      h->size = (h->size / 2) + 1;
+    }
+    return rv;
+  }
+
+  if (h->count == 1) {
+    h->count--;
+    return h->data[1];
+  }
+  return NULL;
+}
+
+void* mmh_pop_max_data(heap_t* h) {
+  if (h->count > 2) {
+    int idx = 2;
+    if (h->prio[2] < h->prio[3]) idx = 3;
+    void* rv = h->data[idx];
+    h->prio[idx] = h->prio[h->count];
+    h->data[idx] = h->data[h->count];
+    h->count--;
+    trickledown(h, idx);
+    if (h->count == h->size / 3) {
+      // printf("realloc: %d, %d\n", h->count, h->size / 2);
+      h->prio = realloc(h->prio, ((h->size / 2) + 1) * sizeof(int));
+      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(void*));
+      h->size = (h->size / 2) + 1;
+    }
+    return rv;
+  }
+
+  if (h->count == 2) {
+    h->count--;
+    return h->data[2];
+  }
+
+  if (h->count == 1) {
+    h->count--;
+    return h->data[1];
+  }
+  return NULL;
+}
+
+void* mmh_peek_min_data(heap_t* h) {}
+
+void* mmh_peek_max_data(heap_t* h) {}
+
+int mmh_pop_min(heap_t* h) {
+  if (h->count > 1) {
+    int d = h->prio[1];
+    h->prio[1] = h->prio[h->count--];
+    trickledown(h, 1);
+    if (h->count == h->size / 3) {
+      // printf("realloc: %d, %d\n", h->count, h->size / 2);
+      h->prio = realloc(h->prio, ((h->size / 2) + 1) * sizeof(int));
+      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(void*));
       h->size = (h->size / 2) + 1;
     }
     return d;
@@ -194,7 +258,7 @@ int mmh_pop_min(heap_t* h) {
 
   if (h->count == 1) {
     h->count--;
-    return h->data[1];
+    return h->prio[1];
   }
   return -1;
 }
@@ -202,13 +266,14 @@ int mmh_pop_min(heap_t* h) {
 int mmh_pop_max(heap_t* h) {
   if (h->count > 2) {
     int idx = 2;
-    if (h->data[2] < h->data[3]) idx = 3;
-    int d = h->data[idx];
-    h->data[idx] = h->data[h->count--];
+    if (h->prio[2] < h->prio[3]) idx = 3;
+    int d = h->prio[idx];
+    h->prio[idx] = h->prio[h->count--];
     trickledown(h, idx);
     if (h->count == h->size / 3) {
       // printf("realloc: %d, %d\n", h->count, h->size / 2);
-      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(int));
+      h->prio = realloc(h->prio, ((h->size / 2) + 1) * sizeof(int));
+      h->data = realloc(h->data, ((h->size / 2) + 1) * sizeof(void*));
       h->size = (h->size / 2) + 1;
     }
     return d;
@@ -216,32 +281,32 @@ int mmh_pop_max(heap_t* h) {
 
   if (h->count == 2) {
     h->count--;
-    return h->data[2];
+    return h->prio[2];
   }
 
   if (h->count == 1) {
     h->count--;
-    return h->data[1];
+    return h->prio[1];
   }
   return -1;
 }
 
 int mmh_peek_min(heap_t* h) {
   if (h->count > 0) {
-    return h->data[1];
+    return h->prio[1];
   }
   return -1;
 }
 
 int mmh_peek_max(heap_t* h) {
   if (h->count > 2) {
-    return max(h->data[2], h->data[3]);
+    return max(h->prio[2], h->prio[3]);
   }
   if (h->count == 2) {
-    return h->data[2];
+    return h->prio[2];
   }
   if (h->count == 1) {
-    return h->data[1];
+    return h->prio[1];
   }
   return -1;
 }
@@ -249,26 +314,20 @@ int mmh_peek_max(heap_t* h) {
 void mmh_dump(heap_t* h) {
   printf("count is %d, elements are:\n\t [", h->count);
   for (int i = 1; i <= h->count; i++) {
-    printf(" %d ", h->data[i]);
+    printf(" %d ", h->prio[i]);
   }
   printf("]\n");
 }
 
-heap_t* mmh_init() {
-  heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(50, sizeof(int));
-  h->count = 0;
-  h->size = 50;
-
-  return h;
-}
+heap_t* mmh_init() { return mmh_init_with_size(50); }
 
 heap_t* mmh_init_with_size(int size) {
   // first array element is wasted since 1st heap element is on position 1
   // inside the array i.e. => [0,(1),(2), ... (n)] so minimum viable size is 2
   size = size > 2 ? size : 2;
   heap_t* h = calloc(1, sizeof(heap_t));
-  h->data = calloc(size, sizeof(int));
+  h->prio = calloc(size, sizeof(int));
+  h->data = calloc(size, sizeof(void*));
   h->count = 0;
   h->size = size;
 
@@ -276,6 +335,7 @@ heap_t* mmh_init_with_size(int size) {
 }
 
 void mmh_free(heap_t* h) {
+  free(h->prio);
   free(h->data);
   free(h);
 }

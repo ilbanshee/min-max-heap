@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 // included only for testing log2_32 against c99 floor of log2
+#include <assert.h>
 #include <math.h>
-#include <string.h>
-#include <time.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <assert.h>
+#include <string.h>
+#include <time.h>
 
 #include "minmax_heap.h"
 
@@ -37,7 +37,7 @@ void t_down_max() {
   heap_t* h = mmh_init();
 
   for (int i = 500000; i >= 0; i--) {
-    mmh_insert(h, i);
+    mmh_insert(h, i, NULL);
   }
 
   int start = 500000;
@@ -49,12 +49,31 @@ void t_down_max() {
   printf("[OK]\n");
 }
 
+void t_down_max_data() {
+  printf("Testing pop_max_data after sequential insert from 500k to 0");
+  heap_t* h = mmh_init();
+
+  for (int i = 500000; i >= 0; i--) {
+    int* pi = calloc(1, sizeof(int*));
+    *pi = i;
+    mmh_insert(h, i, pi);
+  }
+
+  int start = 500000;
+  while (h->count != 0) {
+    assert(start-- == *(int*)mmh_pop_max_data(h));
+  }
+
+  mmh_free(h);
+  printf("[OK]\n");
+}
+
 void t_down_min() {
   printf("Testing pop_min after sequential insert from 500k to 0...  ");
   heap_t* h = mmh_init();
 
   for (int i = 500000; i >= 0; i--) {
-    mmh_insert(h, i);
+    mmh_insert(h, i, NULL);
   }
 
   int start = 0;
@@ -66,12 +85,32 @@ void t_down_min() {
   printf("[OK]\n");
 }
 
+void t_down_min_data() {
+  printf("Testing pop_min_data after sequential insert from 500k to 0");
+  heap_t* h = mmh_init();
+
+  for (int i = 500000; i >= 0; i--) {
+    int* pi = calloc(1, sizeof(int*));
+    *pi = i;
+    mmh_insert(h, i, pi);
+  }
+
+  int start = 0;
+  while (h->count != 0) {
+    assert(start++ == *(int*)mmh_pop_min_data(h));
+  }
+
+  // TODO free pi data...
+  mmh_free(h);
+  printf("[OK]\n");
+}
+
 void t_up_max() {
   printf("Testing pop_max after sequential insert from 0 to 500k...  ");
   heap_t* h = mmh_init();
 
   for (int i = 0; i <= 500000; i++) {
-    mmh_insert(h, i);
+    mmh_insert(h, i, NULL);
   }
 
   int start = 500000;
@@ -88,7 +127,7 @@ void t_up_min() {
   heap_t* h = mmh_init();
 
   for (int i = 0; i <= 500000; i++) {
-    mmh_insert(h, i);
+    mmh_insert(h, i, NULL);
   }
 
   int start = 0;
@@ -108,7 +147,7 @@ void t_rand_data_max() {
   int randarray[5000];
   for (int i = 0; i < 5000; i++) {
     randarray[i] = rand() % 100;
-    mmh_insert(h, randarray[i]);
+    mmh_insert(h, randarray[i], NULL);
   }
 
   qsort(randarray, 5000, sizeof(int), compare_ints_max);
@@ -130,7 +169,7 @@ void t_rand_data_min() {
   int randarray[5000];
   for (int i = 0; i < 5000; i++) {
     randarray[i] = rand() % 100;
-    mmh_insert(h, randarray[i]);
+    mmh_insert(h, randarray[i], NULL);
   }
 
   qsort(randarray, 5000, sizeof(int), compare_ints_min);
@@ -172,12 +211,12 @@ void t_insert_data_max() {
   heap_t* h = mmh_init();
 
   srand(time(NULL));
-  int randarray[10] = {0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
-  for (int i = 0; i < 10; i++) {
-    mmh_insert(h, randarray[i]);
+  int randarray[12] = {0, 4, 4, 2, 9, 9, 3, 7, 6, 8, 5, 1};
+  for (int i = 0; i < 12; i++) {
+    mmh_insert(h, randarray[i], NULL);
   }
-  qsort(randarray, 10, sizeof(int), compare_ints_min);
-  int index = 9;
+  qsort(randarray, 12, sizeof(int), compare_ints_min);
+  int index = 11;
   while (h->count > 0) {
     assert(randarray[index--] == mmh_pop_max(h));
   }
@@ -194,7 +233,7 @@ void t_insert_data_min() {
   srand(time(NULL));
   int randarray[10] = {0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
   for (int i = 0; i < 10; i++) {
-    mmh_insert(h, randarray[i]);
+    mmh_insert(h, randarray[i], NULL);
   }
 
   qsort(randarray, 10, sizeof(int), compare_ints_min);
@@ -213,7 +252,7 @@ void t_min_index() {
   heap_t* h = mmh_init();
   // messing with internals for this test...
   h->count = 10;
-  int* tmp = h->data;
+  int* tmp = h->prio;
 
   //            0  1  2  3  4  5  6  7  8  9  10
   int a1[11] = {0, 0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
@@ -221,22 +260,22 @@ void t_min_index() {
   int a3[11] = {0, 0, 4, 2, 1, 3, 7, 6, 8, 5, 1};
   int a4[11] = {0, 0, 4, 2, 8, 1, 7, 6, 8, 5, 1};
   int a5[11] = {0, 0, 1, 2, 9, 3, 7, 6, 8, 5, 1};
-  h->data = (int*)&a1;
+  h->prio = (int*)&a1;
   assert(index_min_child_grandchild(h, 1) == 3);
-  h->data = (int*)&a2;
+  h->prio = (int*)&a2;
   assert(index_min_child_grandchild(h, 1) == 2);
-  h->data = (int*)&a3;
+  h->prio = (int*)&a3;
   assert(index_min_child_grandchild(h, 1) == 4);
-  h->data = (int*)&a4;
+  h->prio = (int*)&a4;
   assert(index_min_child_grandchild(h, 1) == 5);
-  h->data = (int*)&a5;
+  h->prio = (int*)&a5;
   assert(index_min_child_grandchild(h, 1) == 2);
   for (; h->count > 1; h->count--) {
     assert(index_min_child_grandchild(h, 1) == 2);
   }
 
   // restore verbatim situation before calling the free function
-  h->data = tmp;
+  h->prio = tmp;
   h->count = 0;
 
   mmh_free(h);
@@ -252,7 +291,7 @@ void t_rand_data_min_max() {
   int randarray[array_size];
   for (int i = 0; i < array_size; i++) {
     randarray[i] = rand() % (array_size * 10);
-    mmh_insert(h, randarray[i]);
+    mmh_insert(h, randarray[i], NULL);
   }
 
   int randarray_max[array_size];
@@ -298,7 +337,7 @@ void t_initial_size_pop_min_max() {
     int randarray[array_size];
     for (int i = 0; i < array_size; i++) {
       randarray[i] = rand() % (array_size * 10);
-      mmh_insert(h, randarray[i]);
+      mmh_insert(h, randarray[i], NULL);
     }
 
     int randarray_max[array_size];
@@ -331,7 +370,7 @@ void t_insert_reinsert_data() {
   srand(time(NULL));
   int randarray[10] = {0, 4, 2, 9, 3, 7, 6, 8, 5, 1};
   for (int i = 0; i < 10; i++) {
-    mmh_insert(h, randarray[i]);
+    mmh_insert(h, randarray[i], NULL);
   }
 
   qsort(randarray, 10, sizeof(int), compare_ints_min);
@@ -344,7 +383,7 @@ void t_insert_reinsert_data() {
   assert(mmh_pop_max(h) == -1);
 
   for (int i = 0; i < 10; i++) {
-    mmh_insert(h, randarray[i]);
+    mmh_insert(h, randarray[i], NULL);
   }
   index = 0;
   while (h->count > 0) {
@@ -364,7 +403,7 @@ void t_peek_min_max() {
     int randarray[10];
     for (int i = 0; i < 10; i++) {
       randarray[i] = rand() % (10);
-      mmh_insert(h, randarray[i]);
+      mmh_insert(h, randarray[i], NULL);
     }
 
     int randarray_max[10];
@@ -400,7 +439,10 @@ void t_peek_min_max() {
 
 int main() {
   t_down_max();
+  t_down_max_data();
   t_down_min();
+  t_down_min_data();
+
   t_up_max();
   t_up_min();
 
